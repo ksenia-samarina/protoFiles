@@ -14,12 +14,12 @@ message GetReq {
 }
 
 message GetRes {
-  repeated bytes value = 1;
+  bytes value = 1;
 }
 
 message PutReq {
   string key = 1;
-  repeated bytes value = 2;
+  bytes value = 2;
 }
 
 message PutRes {
