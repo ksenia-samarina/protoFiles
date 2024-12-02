@@ -19,8 +19,9 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	LSMT_Get_FullMethodName = "/keyValueDB.LSMT/Get"
-	LSMT_Put_FullMethodName = "/keyValueDB.LSMT/Put"
+	LSMT_Get_FullMethodName    = "/keyValueDB.LSMT/Get"
+	LSMT_Put_FullMethodName    = "/keyValueDB.LSMT/Put"
+	LSMT_Delete_FullMethodName = "/keyValueDB.LSMT/Delete"
 )
 
 // LSMTClient is the client API for LSMT service.
@@ -29,6 +30,7 @@ const (
 type LSMTClient interface {
 	Get(ctx context.Context, in *GetReq, opts ...grpc.CallOption) (*GetRes, error)
 	Put(ctx context.Context, in *PutReq, opts ...grpc.CallOption) (*PutRes, error)
+	Delete(ctx context.Context, in *DeleteReq, opts ...grpc.CallOption) (*DeleteRes, error)
 }
 
 type lSMTClient struct {
@@ -59,12 +61,23 @@ func (c *lSMTClient) Put(ctx context.Context, in *PutReq, opts ...grpc.CallOptio
 	return out, nil
 }
 
+func (c *lSMTClient) Delete(ctx context.Context, in *DeleteReq, opts ...grpc.CallOption) (*DeleteRes, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DeleteRes)
+	err := c.cc.Invoke(ctx, LSMT_Delete_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // LSMTServer is the server API for LSMT service.
 // All implementations must embed UnimplementedLSMTServer
 // for forward compatibility.
 type LSMTServer interface {
 	Get(context.Context, *GetReq) (*GetRes, error)
 	Put(context.Context, *PutReq) (*PutRes, error)
+	Delete(context.Context, *DeleteReq) (*DeleteRes, error)
 	mustEmbedUnimplementedLSMTServer()
 }
 
@@ -80,6 +93,9 @@ func (UnimplementedLSMTServer) Get(context.Context, *GetReq) (*GetRes, error) {
 }
 func (UnimplementedLSMTServer) Put(context.Context, *PutReq) (*PutRes, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Put not implemented")
+}
+func (UnimplementedLSMTServer) Delete(context.Context, *DeleteReq) (*DeleteRes, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Delete not implemented")
 }
 func (UnimplementedLSMTServer) mustEmbedUnimplementedLSMTServer() {}
 func (UnimplementedLSMTServer) testEmbeddedByValue()              {}
@@ -138,6 +154,24 @@ func _LSMT_Put_Handler(srv interface{}, ctx context.Context, dec func(interface{
 	return interceptor(ctx, in, info, handler)
 }
 
+func _LSMT_Delete_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LSMTServer).Delete(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LSMT_Delete_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LSMTServer).Delete(ctx, req.(*DeleteReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // LSMT_ServiceDesc is the grpc.ServiceDesc for LSMT service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -152,6 +186,10 @@ var LSMT_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Put",
 			Handler:    _LSMT_Put_Handler,
+		},
+		{
+			MethodName: "Delete",
+			Handler:    _LSMT_Delete_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

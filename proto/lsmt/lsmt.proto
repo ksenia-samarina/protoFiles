@@ -7,6 +7,7 @@ option go_package = "samarina.lsmt.v1;lsmtv1";
 service LSMT {
   rpc Get(GetReq) returns (GetRes);
   rpc Put(PutReq) returns (PutRes);
+  rpc Delete(DeleteReq) returns (DeleteRes);
 }
 
 message GetReq {
@@ -23,5 +24,13 @@ message PutReq {
 }
 
 message PutRes {
+  bool ok = 1;
+}
+
+message DeleteReq {
+  string key = 1;
+}
+
+message DeleteRes {
   bool ok = 1;
 }
